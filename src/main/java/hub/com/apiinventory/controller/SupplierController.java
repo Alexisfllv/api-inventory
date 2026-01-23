@@ -2,6 +2,8 @@ package hub.com.apiinventory.controller;
 
 import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.service.SupplierService;
+import hub.com.apiinventory.util.apiresponse.GenericResponse;
+import hub.com.apiinventory.util.apiresponse.StatusApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +21,11 @@ public class SupplierController {
 
     // GET
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<SupplierDTOResponse>> getByIdGet(@PathVariable Long id){
+    public Mono<ResponseEntity<GenericResponse<SupplierDTOResponse>>> getByIdGet(@PathVariable Long id){
         return supplierService.getById(id)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(supplierDTO ->
+                        ResponseEntity.ok(new GenericResponse<>(StatusApi.SUCCESS, supplierDTO))
+                );
     }
 
 
