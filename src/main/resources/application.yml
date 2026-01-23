@@ -1,9 +1,10 @@
 spring:
   application:
-    name: ${SPRING_APP_NAME:users}
-
-  jpa:
-    open-in-view: false
+    name: ${SPRING_APP_NAME:api-inventory}
 
 server:
   port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: INFO
