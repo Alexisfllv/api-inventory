@@ -1,9 +1,7 @@
 package hub.com.apiinventory.service.impl;
 
 import hub.com.apiinventory.dto.SupplierDTOResponse;
-import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.mapper.SupplierMapper;
-import hub.com.apiinventory.repo.SupplierRepository;
 import hub.com.apiinventory.service.SupplierService;
 import hub.com.apiinventory.service.domain.SupplierServiceDomain;
 import lombok.RequiredArgsConstructor;
