@@ -32,6 +32,7 @@ public class SupplierServiceImpl implements SupplierService {
                 .map(supplierMapper::toResponse);
     }
 
+    @Override
     public Mono<PageResponse<SupplierDTOResponse>> findAllPage(int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
