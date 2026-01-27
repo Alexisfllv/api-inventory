@@ -1,5 +1,6 @@
 package hub.com.apiinventory.service.domain;
 
+import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.exception.ResourceNotFoundException;
 import hub.com.apiinventory.mapper.SupplierMapper;
@@ -19,6 +20,12 @@ public class SupplierServiceDomain {
     public Mono<Supplier> findByIdOrError(Long id){
         return supplierRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException(ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message()+id)));
+    }
+
+    // saveSupplier
+    public Mono<SupplierDTOResponse> saveSupplier(Supplier supplier){
+        return supplierRepository.save(supplier)
+                .map(s -> supplierMapper.toResponse(s));
     }
 
 

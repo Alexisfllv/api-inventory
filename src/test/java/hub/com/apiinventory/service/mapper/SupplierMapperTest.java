@@ -1,5 +1,6 @@
 package hub.com.apiinventory.service.mapper;
 
+import hub.com.apiinventory.dto.SupplierDTORequest;
 import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.mapper.SupplierMapper;
@@ -47,6 +48,36 @@ public class SupplierMapperTest {
         void toResponseTestNull(){
             // Act
             SupplierDTOResponse result = supplierMapper.toResponse(null);
+
+            // Assert
+            assertNull(result);
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests mapped entity <- request")
+    class toEntityTests{
+        @Test
+        @DisplayName("Should map entity <- request")
+        void toEntityTestCorrectly(){
+            // Arrange
+            SupplierDTORequest request = new SupplierDTORequest("name","email@gmail.com","+51 9229282");
+            // Act
+            Supplier result = supplierMapper.toEntity(request);
+            // Assert
+            assertAll(
+                    () -> assertEquals("name",result.getName()),
+                    () -> assertEquals("email@gmail.com", result.getEmail()),
+                    () -> assertEquals("+51 9229282",result.getPhone())
+            );
+
+        }
+
+        @Test
+        @DisplayName("Should map entity <- request null")
+        void toEntityTestNull(){
+            // Act
+            Supplier result = supplierMapper.toEntity(null);
 
             // Assert
             assertNull(result);

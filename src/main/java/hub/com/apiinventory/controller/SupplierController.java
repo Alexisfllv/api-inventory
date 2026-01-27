@@ -1,11 +1,14 @@
 package hub.com.apiinventory.controller;
 
+import hub.com.apiinventory.dto.SupplierDTORequest;
 import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.service.SupplierService;
 import hub.com.apiinventory.util.apiresponse.GenericResponse;
 import hub.com.apiinventory.util.apiresponse.StatusApi;
 import hub.com.apiinventory.util.page.PageResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -34,6 +37,17 @@ public class SupplierController {
         return supplierService.findAllPage(page, size)
                 .map(paged ->
                         new GenericResponse<>(StatusApi.SUCCESS, paged)
+                );
+    }
+
+    // POST
+    @PostMapping()
+    public Mono<ResponseEntity<GenericResponse<SupplierDTOResponse>>> saveSupplierPost(@Valid @RequestBody SupplierDTORequest request){
+        return supplierService.saveSupplier(request)
+                .map(supplierDTOResponse ->
+                        ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(new GenericResponse<>(StatusApi.CREATED, supplierDTOResponse))
                 );
     }
 

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -17,12 +18,11 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     // Jakarta Validation
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleMethodArgumentNotValid(MethodArgumentNotValidException mne, ServerWebExchange exchange) {
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleWebExchangeBindNotValid(WebExchangeBindException webe, ServerWebExchange exchange) {
 
         //filter msg
-        String errorMsg = mne.getBindingResult()
-                .getFieldErrors()
+        String errorMsg = webe.getFieldErrors()
                 .stream()
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .collect(Collectors.joining(" | "));

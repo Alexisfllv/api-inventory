@@ -1,6 +1,8 @@
 package hub.com.apiinventory.service.impl;
 
+import hub.com.apiinventory.dto.SupplierDTORequest;
 import hub.com.apiinventory.dto.SupplierDTOResponse;
+import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.mapper.SupplierMapper;
 import hub.com.apiinventory.repo.SupplierRepository;
 import hub.com.apiinventory.service.SupplierService;
@@ -26,6 +28,7 @@ public class SupplierServiceImpl implements SupplierService {
     // uso directo no reutilizable
     private final SupplierRepository supplierRepository;
 
+    // GET
     @Override
     public Mono<SupplierDTOResponse> getById(Long id) {
         return supplierServiceDomain.findByIdOrError(id)
@@ -57,5 +60,14 @@ public class SupplierServiceImpl implements SupplierService {
                             totalPages
                     );
                 });
+    }
+
+    // POST
+    @Override
+    public Mono<SupplierDTOResponse> saveSupplier(SupplierDTORequest request) {
+        Supplier supplier = supplierMapper.toEntity(request);
+        // save
+        return supplierServiceDomain.saveSupplier(supplier);
+
     }
 }
