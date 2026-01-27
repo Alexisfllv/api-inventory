@@ -1,13 +1,16 @@
 package hub.com.apiinventory.service.domain;
 
+import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.exception.ResourceNotFoundException;
+import hub.com.apiinventory.mapper.SupplierMapper;
 import hub.com.apiinventory.nums.ExceptionMessages;
 import hub.com.apiinventory.repo.SupplierRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,6 +24,9 @@ public class SupplierServiceDomainTest {
 
     @Mock
     private SupplierRepository supplierRepository;
+
+    @Mock
+    private SupplierMapper supplierMapper;
 
     @InjectMocks
     private SupplierServiceDomain supplierServiceDomain;
@@ -65,6 +71,35 @@ public class SupplierServiceDomainTest {
                     .verify();
 
             verify(supplierRepository, times(1)).findById(1L);
+        }
+    }
+
+    @Nested
+    @DisplayName("Test saveSupplier")
+    class shouldSaveSupplierSuccess{
+
+        @Test
+        @DisplayName("Test saveSupplier Success")
+        void saveSupplierSuccess(){
+            // Arrange
+            Supplier supplier = new Supplier(null,"name Test","email_test@gmail.com","+51 9827364352");
+            Supplier supplierSaved = supplier;
+            supplierSaved.setId(1L);
+
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L,"name Test","email_test@gmail.com","+51 9827364352");
+
+            when(supplierRepository.save(supplier)).thenReturn(Mono.just(supplierSaved));
+            when(supplierMapper.toResponse(supplierSaved)).thenReturn(supplierDTOResponse);
+            // Act & Assert
+            StepVerifier.create(supplierServiceDomain.saveSupplier(supplier))
+                    .expectNext(supplierDTOResponse)
+                    .verifyComplete();
+
+            // InOrder verify
+            InOrder inOrder = inOrder(supplierRepository,supplierMapper);
+            inOrder.verify(supplierRepository).save(supplier);
+            inOrder.verify(supplierMapper).toResponse(supplierSaved);
+            inOrder.verifyNoMoreInteractions();
         }
     }
 }
