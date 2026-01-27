@@ -1,5 +1,6 @@
 package hub.com.apiinventory.service.impl;
 
+import hub.com.apiinventory.dto.SupplierDTORequest;
 import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.mapper.SupplierMapper;
@@ -9,8 +10,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
@@ -103,5 +106,25 @@ public class SupplierServiceImplTest {
                     .expectError(RuntimeException.class)
                     .verify();
         }
+    }
+
+    @Test
+    @DisplayName("saveSupplier")
+    void saveSupplierSucces(){
+        // Arrange
+        SupplierDTORequest supplierRequest = new SupplierDTORequest("name","email@gmail.com","123456789");
+        Supplier supplier = new Supplier(null,"name","email@gmail.com","123456789");
+        SupplierDTOResponse supplierResponse = new SupplierDTOResponse(1L,"name","email@gmail.com","123456789");
+        when(supplierMapper.toEntity(supplierRequest)).thenReturn(supplier);
+        when(supplierServiceDomain.saveSupplier(supplier)).thenReturn(Mono.just(supplierResponse));
+        // Act & Assert
+        StepVerifier.create(supplierServiceImpl.saveSupplier(supplierRequest))
+                .expectNext(supplierResponse)
+                .verifyComplete();
+
+        // InOrder Verify
+        InOrder inOrder = Mockito.inOrder(supplierMapper,supplierServiceDomain);
+        inOrder.verify(supplierMapper).toEntity(supplierRequest);
+        inOrder.verify(supplierServiceDomain).saveSupplier(supplier);
     }
 }
