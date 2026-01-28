@@ -87,4 +87,11 @@ public class SupplierServiceImpl implements SupplierService {
                 .flatMap(supplierRepository::save)
                 .map(supplierMapper::toResponse);
     }
+
+    // DELETE
+    @Override
+    public Mono<Void> deleteSupplier(Long id) {
+        return supplierServiceDomain.findByIdOrError(id)
+                .flatMap(sup -> supplierRepository.delete(sup));
+    }
 }
