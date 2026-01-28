@@ -51,5 +51,16 @@ public class SupplierController {
                 );
     }
 
+    // PUT
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<GenericResponse<SupplierDTOResponse>>> updateSupplierPut(@PathVariable Long id, @Valid @RequestBody SupplierDTORequest request){
+        return supplierService.updateSupplier(id,request)
+                .map(updatedSupplier ->
+                        ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(new GenericResponse<>(StatusApi.UPDATED, updatedSupplier))
+                );
+    }
+
 
 }
