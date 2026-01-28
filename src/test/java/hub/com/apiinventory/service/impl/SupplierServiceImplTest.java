@@ -3,6 +3,7 @@ package hub.com.apiinventory.service.impl;
 import hub.com.apiinventory.dto.SupplierDTORequest;
 import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
+import hub.com.apiinventory.exception.ResourceNotFoundException;
 import hub.com.apiinventory.mapper.SupplierMapper;
 import hub.com.apiinventory.repo.SupplierRepository;
 import hub.com.apiinventory.service.domain.SupplierServiceDomain;
@@ -22,7 +23,7 @@ import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class SupplierServiceImplTest {
@@ -126,5 +127,59 @@ public class SupplierServiceImplTest {
         InOrder inOrder = Mockito.inOrder(supplierMapper,supplierServiceDomain);
         inOrder.verify(supplierMapper).toEntity(supplierRequest);
         inOrder.verify(supplierServiceDomain).saveSupplier(supplier);
+    }
+
+    @Nested
+    @DisplayName("updateSupplier")
+    class updateSupplier{
+
+        @Test
+        @DisplayName("updateSupplierSuccess")
+        void updateSupplier_success(){
+            // Arrange
+            Long idExist = 1L;
+            Supplier existingSupplier = new Supplier(1L, "Old Name", "old@email.com", "1111111");
+            SupplierDTORequest supplierDTORequest = new SupplierDTORequest("New Name", "new@email.com", "2222222");
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L, "New Name", "new@email.com", "2222222");
+            when(supplierRepository.findById(idExist)).thenReturn(Mono.just(existingSupplier));
+            when(supplierRepository.save(any(Supplier.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
+            when(supplierMapper.toResponse(existingSupplier)).thenReturn(supplierDTOResponse);
+            // Act
+            StepVerifier.create(supplierServiceImpl.updateSupplier(idExist,supplierDTORequest))
+                    .expectNextMatches( dto ->
+                                    dto.name().equals("New Name") &&
+                                    dto.email().equals("new@email.com") &&
+                                    dto.phone().equals("2222222")
+                            )
+                    .verifyComplete();
+
+            // Verify
+            InOrder inOrder = Mockito.inOrder(supplierMapper,supplierRepository);
+            inOrder.verify(supplierRepository).findById(idExist);
+            inOrder.verify(supplierRepository).save(any(Supplier.class));
+            inOrder.verify(supplierMapper).toResponse(existingSupplier);
+        }
+        @Test
+        @DisplayName("updateSupplierNotFound")
+        void updateSupplier_notFound() {
+            // Arrange
+            Long idNotExist = 99L;
+            SupplierDTORequest supplierDTORequest = new SupplierDTORequest("New Name", "new@email.com", "2222222");
+
+            when(supplierRepository.findById(idNotExist)).thenReturn(Mono.empty());
+
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.updateSupplier(idNotExist, supplierDTORequest))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof ResourceNotFoundException &&
+                                    throwable.getMessage().contains(String.valueOf(idNotExist))
+                    )
+                    .verify();
+
+            // Verify findById fue llamado
+            verify(supplierRepository).findById(idNotExist);
+            // No se debe llamar a save ni al mapper
+            verifyNoInteractions(supplierMapper);
+        }
     }
 }

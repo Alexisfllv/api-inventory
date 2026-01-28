@@ -3,7 +3,9 @@ package hub.com.apiinventory.service.impl;
 import hub.com.apiinventory.dto.SupplierDTORequest;
 import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
+import hub.com.apiinventory.exception.ResourceNotFoundException;
 import hub.com.apiinventory.mapper.SupplierMapper;
+import hub.com.apiinventory.nums.ExceptionMessages;
 import hub.com.apiinventory.repo.SupplierRepository;
 import hub.com.apiinventory.service.SupplierService;
 import hub.com.apiinventory.service.domain.SupplierServiceDomain;
@@ -69,5 +71,20 @@ public class SupplierServiceImpl implements SupplierService {
         // save
         return supplierServiceDomain.saveSupplier(supplier);
 
+    }
+
+    // PUT
+    @Override
+    public Mono<SupplierDTOResponse> updateSupplier(Long id, SupplierDTORequest request) {
+        return supplierRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException(ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message()+ id)))
+                .map(exist -> {
+                    exist.setName(request.name());
+                    exist.setEmail(request.email());
+                    exist.setPhone(request.phone());
+                    return exist;
+                })
+                .flatMap(supplierRepository::save)
+                .map(supplierMapper::toResponse);
     }
 }

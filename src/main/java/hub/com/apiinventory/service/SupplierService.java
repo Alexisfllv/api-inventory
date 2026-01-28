@@ -13,5 +13,7 @@ public interface SupplierService {
     // POST
     Mono<SupplierDTOResponse> saveSupplier(SupplierDTORequest request);
 
+    // PUT
+    Mono<SupplierDTOResponse> updateSupplier(Long id, SupplierDTORequest request);
 
 }
