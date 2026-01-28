@@ -16,4 +16,6 @@ public interface SupplierService {
     // PUT
     Mono<SupplierDTOResponse> updateSupplier(Long id, SupplierDTORequest request);
 
+    // DELETE
+    Mono<Void> deleteSupplier(Long id);
 }

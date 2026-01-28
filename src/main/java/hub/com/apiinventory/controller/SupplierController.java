@@ -63,4 +63,12 @@ public class SupplierController {
     }
 
 
+    // DELETE
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<GenericResponse<Void>>> deleteSupplierDelete(@PathVariable Long id){
+        return supplierService.deleteSupplier(id)
+                .then(Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).build()));
+    }
+
+
 }

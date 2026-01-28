@@ -182,4 +182,24 @@ public class SupplierServiceImplTest {
             verifyNoInteractions(supplierMapper);
         }
     }
+
+    @Test
+    @DisplayName("deleteSupplier")
+    void deleteSupplier(){
+        // Arrange
+        Long idExist = 1L;
+        Supplier supplier = new Supplier(idExist, "Name", "mail@test.com", "999");
+
+        when(supplierServiceDomain.findByIdOrError(idExist)).thenReturn(Mono.just(supplier));
+
+        when(supplierRepository.delete(supplier)).thenReturn(Mono.empty());
+        // Act & Assert
+        StepVerifier.create(supplierServiceImpl.deleteSupplier(idExist))
+                .verifyComplete();
+
+        // Verify
+        InOrder inOrder = Mockito.inOrder(supplierServiceDomain,supplierRepository);
+        verify(supplierServiceDomain).findByIdOrError(idExist);
+        verify(supplierRepository).delete(supplier);
+    }
 }
