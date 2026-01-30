@@ -11,4 +11,8 @@ public interface SupplierRepository extends ReactiveCrudRepository<Supplier, Lon
     Flux<Supplier> findAllBy(Pageable pageable);
     Mono<Long> count();
 
+    // find x email
+    Mono<Supplier> findByEmail(String email);
+
+
 }

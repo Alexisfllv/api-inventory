@@ -5,6 +5,7 @@ import hub.com.apiinventory.dto.SupplierDTOResponse;
 import hub.com.apiinventory.entity.Supplier;
 import hub.com.apiinventory.exception.ResourceNotFoundException;
 import hub.com.apiinventory.mapper.SupplierMapper;
+import hub.com.apiinventory.nums.ExceptionMessages;
 import hub.com.apiinventory.repo.SupplierRepository;
 import hub.com.apiinventory.service.domain.SupplierServiceDomain;
 import org.junit.jupiter.api.DisplayName;
@@ -201,5 +202,51 @@ public class SupplierServiceImplTest {
         InOrder inOrder = Mockito.inOrder(supplierServiceDomain,supplierRepository);
         verify(supplierServiceDomain).findByIdOrError(idExist);
         verify(supplierRepository).delete(supplier);
+    }
+
+    @Nested
+    @DisplayName("getByEmail")
+    class getByEmailGet {
+
+        @Test
+        @DisplayName("getByEmailSuccess")
+        void getByEmail_success(){
+            // Arrange
+            String email = "alexis@email.com";
+            Supplier supplier = new Supplier(1L, "Name", "alexis@email.com", "999");
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L, "Name", "alexis@email.com", "999");
+
+            when(supplierRepository.findByEmail(email)).thenReturn(Mono.just(supplier));
+            when(supplierMapper.toResponse(supplier)).thenReturn(supplierDTOResponse);
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.getByEmail(email))
+                    .expectNext(supplierDTOResponse)
+                    .verifyComplete();
+
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierMapper,supplierRepository);
+            inOrder.verify(supplierRepository).findByEmail(email);
+            inOrder.verify(supplierMapper).toResponse(supplier);
+        }
+
+        @Test
+        @DisplayName("getByEmailNotFound")
+        void getByEmail_notFound() {
+            // Arrange
+            String email = "notexist";
+            when(supplierRepository.findByEmail(email)).thenReturn(Mono.empty());
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.getByEmail(email))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof ResourceNotFoundException &&
+                            throwable.getMessage().equals(ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message() + email)
+                    )
+                    .verify();
+
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierRepository);
+            inOrder.verify(supplierRepository).findByEmail(email);
+        }
+
     }
 }

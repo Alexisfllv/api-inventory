@@ -40,6 +40,15 @@ public class SupplierController {
                 );
     }
 
+    @GetMapping("/email/{email}")
+    public Mono<ResponseEntity<GenericResponse<SupplierDTOResponse>>> getByEmailGet(@PathVariable String email){
+        return supplierService.getByEmail(email)
+                .map(supplierDTO ->
+                        ResponseEntity.status(HttpStatus.OK)
+                                .body(new GenericResponse<>(StatusApi.SUCCESS, supplierDTO))
+                );
+    }
+
     // POST
     @PostMapping()
     public Mono<ResponseEntity<GenericResponse<SupplierDTOResponse>>> saveSupplierPost(@Valid @RequestBody SupplierDTORequest request){

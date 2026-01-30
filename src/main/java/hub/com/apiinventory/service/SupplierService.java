@@ -9,6 +9,7 @@ public interface SupplierService {
     // GET
     Mono<SupplierDTOResponse> getById(Long id);
     Mono<PageResponse<SupplierDTOResponse>> findAllPage(int page, int size);
+    Mono<SupplierDTOResponse> getByEmail(String email);
 
     // POST
     Mono<SupplierDTOResponse> saveSupplier(SupplierDTORequest request);

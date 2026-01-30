@@ -64,6 +64,17 @@ public class SupplierServiceImpl implements SupplierService {
                 });
     }
 
+    @Override
+    public Mono<SupplierDTOResponse> getByEmail(String email) {
+        return supplierRepository.findByEmail(email)
+                .switchIfEmpty(Mono.error(
+                        new ResourceNotFoundException(
+                                ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message() + email
+                        )
+                ))
+                .map(supplierMapper::toResponse);
+    }
+
     // POST
     @Override
     public Mono<SupplierDTOResponse> saveSupplier(SupplierDTORequest request) {
