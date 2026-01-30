@@ -14,5 +14,8 @@ public interface SupplierRepository extends ReactiveCrudRepository<Supplier, Lon
     // find x email
     Mono<Supplier> findByEmail(String email);
 
+    // find like name
+    Flux<Supplier> findByNameContainingIgnoreCase(String name);
+
 
 }
