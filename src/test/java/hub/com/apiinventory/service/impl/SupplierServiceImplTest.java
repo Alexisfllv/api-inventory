@@ -249,4 +249,48 @@ public class SupplierServiceImplTest {
         }
 
     }
+
+    @Nested
+    @DisplayName("searchByName")
+    class searchByName {
+
+        @Test
+        @DisplayName("searchByName Success")
+        void searchByName_success(){
+            // Arrange
+            String name = "Lima";
+            Supplier supplier = new Supplier(1L, "Lima", "alexis@email.com", "999");
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L, "Lima", "alexis@email.com", "999");
+            when(supplierRepository.findByNameContainingIgnoreCase(name)).thenReturn(Flux.just(supplier));
+            when(supplierMapper.toResponse(supplier)).thenReturn(supplierDTOResponse);
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.searchByName(name))
+                    .expectNext(supplierDTOResponse)
+                    .verifyComplete();
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierMapper,supplierRepository);
+            inOrder.verify(supplierRepository).findByNameContainingIgnoreCase(name);
+            inOrder.verify(supplierMapper).toResponse(supplier);
+        }
+
+        @Test
+        @DisplayName("searchByNameNotFound")
+        void searchByName_notFound() {
+            // Arrange
+            String name = "nameNotExist";
+            when(supplierRepository.findByNameContainingIgnoreCase(name)).thenReturn(Flux.empty());
+
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.searchByName(name))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof ResourceNotFoundException &&
+                                    throwable.getMessage().equals(ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message() + name)
+                    )
+                    .verify();
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierRepository);
+            inOrder.verify(supplierRepository).findByNameContainingIgnoreCase(name);
+            inOrder.verifyNoMoreInteractions();
+        }
+    }
 }
