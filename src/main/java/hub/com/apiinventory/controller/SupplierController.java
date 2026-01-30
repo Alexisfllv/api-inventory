@@ -11,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,6 +50,14 @@ public class SupplierController {
                         ResponseEntity.status(HttpStatus.OK)
                                 .body(new GenericResponse<>(StatusApi.SUCCESS, supplierDTO))
                 );
+    }
+
+    @GetMapping("/search/name")
+    public Mono<ResponseEntity<GenericResponse<List<SupplierDTOResponse>>>> getByNameGet(@RequestParam String name) {
+        return supplierService.searchByName(name)
+                .collectList()
+                .map(list -> ResponseEntity.status(HttpStatus.OK)
+                        .body(new GenericResponse<>(StatusApi.SUCCESS, list)));
     }
 
     // POST
