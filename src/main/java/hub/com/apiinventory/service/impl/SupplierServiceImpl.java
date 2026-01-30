@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -73,6 +74,17 @@ public class SupplierServiceImpl implements SupplierService {
                         )
                 ))
                 .map(supplierMapper::toResponse);
+    }
+
+    @Override
+    public Flux<SupplierDTOResponse> searchByName(String name) {
+        return supplierRepository.findByNameContainingIgnoreCase(name)
+                .switchIfEmpty(Flux.error(
+                        new ResourceNotFoundException(
+                                ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message() + name
+                        )
+                ))
+                .map(supplier -> supplierMapper.toResponse(supplier));
     }
 
     // POST
