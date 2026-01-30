@@ -1,0 +1,296 @@
+package hub.com.apiinventory.service.impl;
+
+import hub.com.apiinventory.dto.SupplierDTORequest;
+import hub.com.apiinventory.dto.SupplierDTOResponse;
+import hub.com.apiinventory.entity.Supplier;
+import hub.com.apiinventory.exception.ResourceNotFoundException;
+import hub.com.apiinventory.mapper.SupplierMapper;
+import hub.com.apiinventory.nums.ExceptionMessages;
+import hub.com.apiinventory.repo.SupplierRepository;
+import hub.com.apiinventory.service.domain.SupplierServiceDomain;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class SupplierServiceImplTest {
+
+    @Mock
+    private SupplierServiceDomain supplierServiceDomain;
+
+    @Mock
+    private SupplierMapper supplierMapper;
+
+    @Mock
+    private SupplierRepository supplierRepository;
+
+    @InjectMocks
+    private SupplierServiceImpl supplierServiceImpl;
+
+    @Test
+    @DisplayName("Test getById GET")
+    void testgetByIdSuccess() {
+        // Arrange
+        Long id = 1L;
+        Supplier supplier = new Supplier(1L,"name","email@gmail.com","123456789");
+        SupplierDTOResponse dto = new SupplierDTOResponse(1L,"name","email@gmail.com","123456789");
+
+        when(supplierServiceDomain.findByIdOrError(id))
+                .thenReturn(Mono.just(supplier));
+        when(supplierMapper.toResponse(supplier))
+                .thenReturn(dto);
+
+        // Act
+        Mono<SupplierDTOResponse> result = supplierServiceImpl.getById(id);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNext(dto)
+                .verifyComplete();
+    }
+
+    @Nested
+    @DisplayName("findAllPage")
+    class findAllPage {
+        @Test
+        @DisplayName("Test findAllPage Success")
+        void findAllPage_shouldReturnPagedResponse() {
+            // Arrange
+            int page = 0;
+            int size = 2;
+
+            Supplier supplier1 = new Supplier();
+            Supplier supplier2 = new Supplier();
+            SupplierDTOResponse dto1 = new SupplierDTOResponse(1L,"names1","emails1@gmail.com","+51 123456789");
+            SupplierDTOResponse dto2 = new SupplierDTOResponse(2L,"names2","emails2@gmail.com","+51 987654321");
+
+            when(supplierRepository.findAllBy(any(Pageable.class))).thenReturn(Flux.just(supplier1,supplier2));
+            when(supplierRepository.count()).thenReturn(Mono.just(5L));
+            when(supplierMapper.toResponse(supplier1)).thenReturn(dto1);
+            when(supplierMapper.toResponse(supplier2)).thenReturn(dto2);
+
+            // Act Assert
+            StepVerifier.create(supplierServiceImpl.findAllPage(page, size))
+                    .assertNext(pageResponse -> {
+                        assertEquals(2,pageResponse.content().size());
+                        assertEquals(page,pageResponse.page());
+                        assertEquals(size,pageResponse.size());
+                        assertEquals(5L,pageResponse.totalElements());
+                        assertEquals(3,pageResponse.totalPages());
+                    })
+                    .verifyComplete();
+        }
+        @Test
+        @DisplayName("Test findAll Page Fail")
+        void findAllPage_shouldReturnError() {
+            // Arrange
+            when(supplierRepository.findAllBy(any(Pageable.class)))
+                    .thenReturn(Flux.error(new RuntimeException("DB error")));
+            when(supplierRepository.count())
+                    .thenReturn(Mono.just(0L));
+
+            // Act Assert
+            StepVerifier.create(supplierServiceImpl.findAllPage(0, 10))
+                    .expectError(RuntimeException.class)
+                    .verify();
+        }
+    }
+
+    @Test
+    @DisplayName("saveSupplier")
+    void saveSupplierSucces(){
+        // Arrange
+        SupplierDTORequest supplierRequest = new SupplierDTORequest("name","email@gmail.com","123456789");
+        Supplier supplier = new Supplier(null,"name","email@gmail.com","123456789");
+        SupplierDTOResponse supplierResponse = new SupplierDTOResponse(1L,"name","email@gmail.com","123456789");
+        when(supplierMapper.toEntity(supplierRequest)).thenReturn(supplier);
+        when(supplierServiceDomain.saveSupplier(supplier)).thenReturn(Mono.just(supplierResponse));
+        // Act & Assert
+        StepVerifier.create(supplierServiceImpl.saveSupplier(supplierRequest))
+                .expectNext(supplierResponse)
+                .verifyComplete();
+
+        // InOrder Verify
+        InOrder inOrder = Mockito.inOrder(supplierMapper,supplierServiceDomain);
+        inOrder.verify(supplierMapper).toEntity(supplierRequest);
+        inOrder.verify(supplierServiceDomain).saveSupplier(supplier);
+    }
+
+    @Nested
+    @DisplayName("updateSupplier")
+    class updateSupplier{
+
+        @Test
+        @DisplayName("updateSupplierSuccess")
+        void updateSupplier_success(){
+            // Arrange
+            Long idExist = 1L;
+            Supplier existingSupplier = new Supplier(1L, "Old Name", "old@email.com", "1111111");
+            SupplierDTORequest supplierDTORequest = new SupplierDTORequest("New Name", "new@email.com", "2222222");
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L, "New Name", "new@email.com", "2222222");
+            when(supplierRepository.findById(idExist)).thenReturn(Mono.just(existingSupplier));
+            when(supplierRepository.save(any(Supplier.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
+            when(supplierMapper.toResponse(existingSupplier)).thenReturn(supplierDTOResponse);
+            // Act
+            StepVerifier.create(supplierServiceImpl.updateSupplier(idExist,supplierDTORequest))
+                    .expectNextMatches( dto ->
+                                    dto.name().equals("New Name") &&
+                                    dto.email().equals("new@email.com") &&
+                                    dto.phone().equals("2222222")
+                            )
+                    .verifyComplete();
+
+            // Verify
+            InOrder inOrder = Mockito.inOrder(supplierMapper,supplierRepository);
+            inOrder.verify(supplierRepository).findById(idExist);
+            inOrder.verify(supplierRepository).save(any(Supplier.class));
+            inOrder.verify(supplierMapper).toResponse(existingSupplier);
+        }
+        @Test
+        @DisplayName("updateSupplierNotFound")
+        void updateSupplier_notFound() {
+            // Arrange
+            Long idNotExist = 99L;
+            SupplierDTORequest supplierDTORequest = new SupplierDTORequest("New Name", "new@email.com", "2222222");
+
+            when(supplierRepository.findById(idNotExist)).thenReturn(Mono.empty());
+
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.updateSupplier(idNotExist, supplierDTORequest))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof ResourceNotFoundException &&
+                                    throwable.getMessage().contains(String.valueOf(idNotExist))
+                    )
+                    .verify();
+
+            // Verify findById fue llamado
+            verify(supplierRepository).findById(idNotExist);
+            // No se debe llamar a save ni al mapper
+            verifyNoInteractions(supplierMapper);
+        }
+    }
+
+    @Test
+    @DisplayName("deleteSupplier")
+    void deleteSupplier(){
+        // Arrange
+        Long idExist = 1L;
+        Supplier supplier = new Supplier(idExist, "Name", "mail@test.com", "999");
+
+        when(supplierServiceDomain.findByIdOrError(idExist)).thenReturn(Mono.just(supplier));
+
+        when(supplierRepository.delete(supplier)).thenReturn(Mono.empty());
+        // Act & Assert
+        StepVerifier.create(supplierServiceImpl.deleteSupplier(idExist))
+                .verifyComplete();
+
+        // Verify
+        InOrder inOrder = Mockito.inOrder(supplierServiceDomain,supplierRepository);
+        verify(supplierServiceDomain).findByIdOrError(idExist);
+        verify(supplierRepository).delete(supplier);
+    }
+
+    @Nested
+    @DisplayName("getByEmail")
+    class getByEmailGet {
+
+        @Test
+        @DisplayName("getByEmailSuccess")
+        void getByEmail_success(){
+            // Arrange
+            String email = "alexis@email.com";
+            Supplier supplier = new Supplier(1L, "Name", "alexis@email.com", "999");
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L, "Name", "alexis@email.com", "999");
+
+            when(supplierRepository.findByEmail(email)).thenReturn(Mono.just(supplier));
+            when(supplierMapper.toResponse(supplier)).thenReturn(supplierDTOResponse);
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.getByEmail(email))
+                    .expectNext(supplierDTOResponse)
+                    .verifyComplete();
+
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierMapper,supplierRepository);
+            inOrder.verify(supplierRepository).findByEmail(email);
+            inOrder.verify(supplierMapper).toResponse(supplier);
+        }
+
+        @Test
+        @DisplayName("getByEmailNotFound")
+        void getByEmail_notFound() {
+            // Arrange
+            String email = "notexist";
+            when(supplierRepository.findByEmail(email)).thenReturn(Mono.empty());
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.getByEmail(email))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof ResourceNotFoundException &&
+                            throwable.getMessage().equals(ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message() + email)
+                    )
+                    .verify();
+
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierRepository);
+            inOrder.verify(supplierRepository).findByEmail(email);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("searchByName")
+    class searchByName {
+
+        @Test
+        @DisplayName("searchByName Success")
+        void searchByName_success(){
+            // Arrange
+            String name = "Lima";
+            Supplier supplier = new Supplier(1L, "Lima", "alexis@email.com", "999");
+            SupplierDTOResponse supplierDTOResponse = new SupplierDTOResponse(1L, "Lima", "alexis@email.com", "999");
+            when(supplierRepository.findByNameContainingIgnoreCase(name)).thenReturn(Flux.just(supplier));
+            when(supplierMapper.toResponse(supplier)).thenReturn(supplierDTOResponse);
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.searchByName(name))
+                    .expectNext(supplierDTOResponse)
+                    .verifyComplete();
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierMapper,supplierRepository);
+            inOrder.verify(supplierRepository).findByNameContainingIgnoreCase(name);
+            inOrder.verify(supplierMapper).toResponse(supplier);
+        }
+
+        @Test
+        @DisplayName("searchByNameNotFound")
+        void searchByName_notFound() {
+            // Arrange
+            String name = "nameNotExist";
+            when(supplierRepository.findByNameContainingIgnoreCase(name)).thenReturn(Flux.empty());
+
+            // Act & Assert
+            StepVerifier.create(supplierServiceImpl.searchByName(name))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof ResourceNotFoundException &&
+                                    throwable.getMessage().equals(ExceptionMessages.RESOURCE_NOT_FOUND_ERROR.message() + name)
+                    )
+                    .verify();
+            // InOrder & Verify
+            InOrder inOrder = Mockito.inOrder(supplierRepository);
+            inOrder.verify(supplierRepository).findByNameContainingIgnoreCase(name);
+            inOrder.verifyNoMoreInteractions();
+        }
+    }
+}

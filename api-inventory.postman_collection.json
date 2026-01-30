@@ -1,0 +1,226 @@
+{
+  "info": {
+    "_postman_id": "73047f2c-796b-4817-be1c-ea66c97835ed",
+    "name": "api-inventory",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "36637944"
+  },
+  "item": [
+    {
+      "name": "Supplier",
+      "item": [
+        {
+          "name": "GET",
+          "item": [
+            {
+              "name": "getByIdGet",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{8080}}/api/suppliers/2",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "suppliers",
+                    "2"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "pageListSupplierGet",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{8080}}/api/suppliers/page?page=0&size=10",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "suppliers",
+                    "page"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getByEmail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{8080}}/api/suppliers/email/ventas@andinas.pe",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "suppliers",
+                    "email",
+                    "ventas@andinas.pe"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "getByName",
+              "request": {
+                "method": "GET",
+                "header": []
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "POST",
+          "item": [
+            {
+              "name": "saveSupplier",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Laun Lima\",\n  \"email\": \"Lima@email.com\",\n  \"phone\": \"+51 33322211\"\n}\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{8080}}/api/suppliers",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "suppliers"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "UPDATE",
+          "item": [
+            {
+              "name": "updateSupplier",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Same\",\n  \"email\": \"Coctel@gmail.com\",\n  \"phone\": \"+51 333356789\"\n}\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{8080}}/api/suppliers/1",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "suppliers",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "DELETE",
+          "item": [
+            {
+              "name": "deleteSupplierDelete",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{8080}}/api/suppliers/7",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "suppliers",
+                    "7"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0",
+                      "disabled": true
+                    },
+                    {
+                      "key": "size",
+                      "value": "10",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Item",
+      "item": [
+        {
+          "name": "GET",
+          "item": [
+            {
+              "name": "getItem",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{8080}}/api/items/1",
+                  "host": [
+                    "{{8080}}"
+                  ],
+                  "path": [
+                    "api",
+                    "items",
+                    "1"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
